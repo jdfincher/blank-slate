@@ -11,21 +11,36 @@ type Player struct {
 	Type      string
 	Stats     PlayerStats
 	Inventory PlayerInventory
+	Skills    []Skill
+	Methods   []Method
 }
 
 type PlayerStats struct {
-	Level     int
-	Life      int
-	Clicks    int
-	Money     int
-	Strength  int
-	Dexterity int
-	Fitness   int
-	Agility   int
-	Wisdom    int
-	Intellect int
-	Charisma  int
-	Apperance int
+	Level       int
+	Life        int
+	Clicks      int
+	Money       int
+	Strength    int
+	Dexterity   int
+	Fitness     int
+	Agility     int
+	Wisdom      int
+	Intellect   int
+	Charisma    int
+	Appearance  int
+	Defense     int
+	DamageRange gameobj.DamageRange
+}
+
+type PlayerStatMods struct {
+	Strength   int
+	Dexterity  int
+	Fitness    int
+	Agility    int
+	Wisdom     int
+	Intellect  int
+	Charisma   int
+	Appearance int
 }
 
 type PlayerInventory struct {
