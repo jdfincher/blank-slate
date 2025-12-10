@@ -68,7 +68,6 @@ func main() {
 	debug := false
 
 	for !rl.WindowShouldClose() {
-
 		rl.BeginDrawing()
 
 		rl.ClearBackground(rl.Black)
@@ -77,7 +76,9 @@ func main() {
 		if gS.Menu {
 			rl.DrawTexture(bg, 0, 0, rl.White)
 			gS.StartMenu()
+
 		} else if gS.Create {
+			rl.DrawTexture(bg, 0, 0, rl.White)
 			gS.NewGameCreate()
 		} else if gS.Idle {
 			if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.BottomAlign(50), 200, 50), "Back"); clicked {
@@ -97,7 +98,6 @@ func main() {
 		if pressed := rl.IsKeyPressed(rl.KeyLeftControl); pressed {
 			debug = !debug
 		}
-
 		rl.EndDrawing()
 	}
 	rl.UnloadTexture(bg)

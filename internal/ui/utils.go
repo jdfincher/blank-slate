@@ -25,3 +25,7 @@ func CenterTextX(text string, fontsize int) (X int32) {
 	width := int(rl.MeasureText(text, int32(fontsize)))
 	return int32((rl.GetScreenWidth() / 2) - (width / 2))
 }
+
+func CenterWithinPanelX(xPanel, wPanel, wRec float32) float32 {
+	return xPanel + (wPanel / 2) - (wRec / 2)
+}

@@ -83,11 +83,17 @@ func (s *State) NewGameCreate() {
 		s.CreateState.Stat = s.Player.NewPlayerType()
 		s.CreateState.Type = !s.CreateState.Stat
 	} else if s.CreateState.Stat {
-		s.CreateState.Inv = s.Player.NewPlayerStats()
-		s.CreateState.Stat = !s.CreateState.Inv
+		s.CreateState.Skill = s.Player.NewPlayerStats()
+		s.CreateState.Stat = !s.CreateState.Skill
+	} else if s.CreateState.Skill {
+		s.CreateState.Method = s.Player.NewPlayerSkills()
+		s.CreateState.Skill = !s.CreateState.Method
+	} else if s.CreateState.Method {
+		s.CreateState.Inv = s.Player.NewPlayerMethods()
+		s.CreateState.Method = !s.CreateState.Inv
 	}
 	// Go To Main Menu
-	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.BottomAlign(50), 200, 50), "Main Menu"); clicked {
+	if clicked := rg.Button(rl.NewRectangle(float32(rl.GetScreenWidth())-265, ui.BottomAlign(50), 200, 50), "Main Menu"); clicked {
 		s.Menu = true
 		s.Create = false
 		s.CreateState.Reset()
