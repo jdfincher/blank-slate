@@ -9,12 +9,12 @@ const (
 	OFFSET_Y = 25
 )
 
-func CenterX(width int) (X float32) {
-	return float32((rl.GetScreenWidth() / 2) - (width / 2))
+func CenterX(width float32) (X float32) {
+	return float32((rl.GetScreenWidth() / 2) - int(width/2))
 }
 
-func CenterY(height int) (Y float32) {
-	return float32((rl.GetScreenHeight() / 2) - (height / 2))
+func CenterY(height float32) (Y float32) {
+	return float32((rl.GetScreenHeight() / 2) - int(height/2))
 }
 
 func BottomAlign(height int) (Y float32) {

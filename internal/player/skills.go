@@ -25,51 +25,51 @@ var (
 		Name:      "Climb",
 		Info:      "Scale objects with ease where others falter.",
 		Level:     1,
-		StatKey:   "Strength",
+		StatKey:   "Fitness",
 		StatBonus: 0,
 		ViewState: false,
 	}
-	Skill3 = Skill{
-		Name:      "Skill3",
-		Info:      "Skill placeholder index number three",
-		Level:     1,
-		StatKey:   "Dexterity",
-		StatBonus: 0,
-		ViewState: false,
-	}
-	Skill4 = Skill{
-		Name:      "Skill4",
-		Info:      "Skill placeholder index 4",
+	Spot = Skill{
+		Name:      "Spot",
+		Info:      "A keen eye for opportunity and danger.",
 		Level:     1,
 		StatKey:   "Intellect",
 		StatBonus: 0,
 		ViewState: false,
 	}
-	Skill5 = Skill{
-		Name:      "Skill5",
-		Info:      "Skill placeholder index 5",
+	Lore = Skill{
+		Name:      "Lore",
+		Info:      "The stories of the dark have never left you.",
 		Level:     1,
-		StatKey:   "Appearance",
+		StatKey:   "Wisdom",
 		StatBonus: 0,
 		ViewState: false,
 	}
-	Skill6 = Skill{
-		Name:      "Skill6",
-		Info:      "Skill placeholder index 6",
+	Hide = Skill{
+		Name:      "Hide",
+		Info:      "Not all foes should be faced head on.",
+		Level:     1,
+		StatKey:   "Dexterity",
+		StatBonus: 0,
+		ViewState: false,
+	}
+	Listen = Skill{
+		Name:      "Listen",
+		Info:      "Hear them before they hear you.",
+		Level:     1,
+		StatKey:   "Wisdom",
+		StatBonus: 0,
+		ViewState: false,
+	}
+	Glib = Skill{
+		Name:      "Glib",
+		Info:      "Say what they want to hear.",
 		Level:     1,
 		StatKey:   "Charisma",
 		StatBonus: 0,
 		ViewState: false,
 	}
-	Skill7 = Skill{
-		Name:      "Skill7",
-		Info:      "Skill placeholder index 7",
-		Level:     1,
-		StatKey:   "Fitness",
-		StatBonus: 0,
-		ViewState: false,
-	}
-	StockSkillSet = &[]Skill{Gut, Sneak, Climb, Skill3, Skill4, Skill5, Skill6, Skill7}
+	StockSkillSet = &[]Skill{Gut, Sneak, Climb, Spot, Lore, Hide, Listen, Glib}
 )
 
 type Skill struct {

@@ -21,10 +21,11 @@ func DebugOverlay(gS *gamestate.State) {
 		mouseY  = rl.GetMouseY()
 		Yoffset = 125
 	)
-	rl.DrawRectangle(int32(rl.GetScreenWidth()-150), 0, 150, 125, rl.Black)
+	rl.DrawRectangle(int32(rl.GetScreenWidth()-150), 0, 150, 150, rl.Black)
 	rl.DrawFPS(int32(rl.GetScreenWidth()-Yoffset), 25)
 	rl.DrawText(DebuggerState(gS), int32(rl.GetScreenWidth()-Yoffset), 50, 18, rl.DarkGreen)
-	rl.DrawText(fmt.Sprintf("Mouse-X: %d\nMouse-Y: %d", mouseX, mouseY), int32(rl.GetScreenWidth()-Yoffset), 70, 18, rl.DarkGreen)
+	rl.DrawText(DebuggerCreateState(gS), int32(rl.GetScreenWidth()-Yoffset), 75, 18, rl.DarkGreen)
+	rl.DrawText(fmt.Sprintf("Mouse-X: %d\nMouse-Y: %d", mouseX, mouseY), int32(rl.GetScreenWidth()-Yoffset), 100, 18, rl.DarkGreen)
 }
 
 func DebuggerState(gS *gamestate.State) string {
@@ -38,6 +39,23 @@ func DebuggerState(gS *gamestate.State) string {
 		return "Combat State"
 	}
 	return "No State Found"
+}
+
+func DebuggerCreateState(gS *gamestate.State) string {
+	if gS.CreateState.Name {
+		return "Name"
+	} else if gS.CreateState.Race {
+		return "Race"
+	} else if gS.CreateState.Type {
+		return "Type"
+	} else if gS.CreateState.Skill {
+		return "Skills"
+	} else if gS.CreateState.Method {
+		return "Methods"
+	} else if gS.CreateState.Inv {
+		return "Inventory"
+	}
+	return "No CreateState Found"
 }
 
 func MouseView() {
@@ -58,8 +76,13 @@ func main() {
 
 	rl.SetConfigFlags(rl.FlagWindowResizable)
 	rl.InitWindow(screenWidth, screenHeight, "Test")
-	bg := rl.LoadTexture("internal/res/temp/BGMenu.jpg")
+	image := rl.LoadImage("internal/res/temp/BGMenu.jpg")
+
+	rl.ImageResize(image, 1920, 1080)
+
+	bg := rl.LoadTextureFromImage(image)
 	defer rl.UnloadTexture(bg)
+	defer rl.UnloadImage(image)
 	defer rl.CloseWindow()
 
 	rg.LoadStyle("internal/styles/cyber.rgs")
@@ -68,6 +91,7 @@ func main() {
 	debug := false
 
 	for !rl.WindowShouldClose() {
+
 		rl.BeginDrawing()
 
 		rl.ClearBackground(rl.Black)

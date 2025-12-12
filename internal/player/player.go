@@ -11,12 +11,16 @@ import (
 )
 
 var (
-	statView         = true
-	statPointView    = true
-	skillView        = false
-	addSkillInfoView = false
-	StatsCopy        = PlayerStats{}
-	SkillSet         = []Skill{}
+	statView          = true
+	statPointView     = true
+	skillView         = false
+	methodView        = false
+	addSkillInfoView  = false
+	addMethodInfoView = false
+	StatsCopy         = PlayerStats{}
+	SkillSet          = []Skill{}
+	MethodSet         = []Method{}
+	StockMethodSet    = &[]Method{}
 
 	Human = PlayerStats{
 		Level:      1,
@@ -77,7 +81,7 @@ type Player struct {
 	StatPoints int
 	Inventory  *PlayerInventory
 	Skills     *map[string]Skill
-	Methods    *[]Method
+	Methods    *map[string]Method
 }
 
 type PlayerStats struct {
@@ -132,7 +136,7 @@ func (p *Player) ResetPlayer() {
 	p.StatMods = new(PlayerStatMods)
 	p.StatPoints = 0
 	p.NewSkillMap()
-	p.NewMethodSlice()
+	p.NewMethodMap()
 	p.CreateInventory()
 	p.UpdateStatsCopy(*p.Stats)
 	p.UpdateSkillSetCopy()
@@ -154,6 +158,13 @@ func (p *Player) NewPlayerName() bool {
 
 func (p *Player) NewPlayerRace() bool {
 	p.DrawPlayerStats()
+	var (
+		w float32 = 925
+		h float32 = 200
+		x         = ui.CenterX(w)
+		y         = ui.CenterY(h) - h
+	)
+
 	if human := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)-60, 200, 50), "Human"); human {
 		p.Race = "Human"
 		p.SetRaceStats(Human)
@@ -170,6 +181,24 @@ func (p *Player) NewPlayerRace() bool {
 	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+130, 200, 50), "Next"); clicked {
 		return true
 	}
+
+	mousePos := rl.GetMousePosition()
+	// Human
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
+	if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)-60, 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Human")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), HumanDesc)
+
+	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Mutant")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), HumanDesc)
+
+	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+60, 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Cyborg")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), CyborgDesc)
+
+	}
+
 	return false
 }
 
@@ -439,28 +468,38 @@ func (p *Player) NewPlayerSkills() bool {
 }
 
 func (p *Player) DrawAddSkills() bool {
-	rg.Panel(rl.NewRectangle(400, 405, 550, float32(rl.GetScreenHeight())), "Skills")
 	skills := *StockSkillSet
-	var offset float32 = 25
+	var (
+		offset float32 = 30
+		w      float32 = 360
+		h              = 120 + (float32(len(skills)) * offset)
+		y              = ui.CenterY(h)
+		x              = ui.CenterX(w)
+	)
+	rg.Panel(rl.NewRectangle(x, y, w, h), "Generic Skills")
+
 	for i, s := range *StockSkillSet {
 		skill := skills[i]
+
 		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-		rg.Label(rl.NewRectangle(400, 405+offset, 100, 25), s.Name)
 
-		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
-		rg.Label(rl.NewRectangle(500, 405+offset, 200, 25), fmt.Sprintf(" - %s", s.StatKey))
+		rg.Label(rl.NewRectangle(x, 10+y+offset, 110, 25), fmt.Sprintf("%s ", s.Name))
 
-		if rg.Button(rl.NewRectangle(700, 405+offset, 125, 25), "Remove") {
+		rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
+
+		if rg.Button(rl.NewRectangle(x+110, 10+y+offset, 125, 25), "Remove") {
 			p.RemoveSkill(s)
 			fmt.Println(p.Skills)
-		} else if rg.Button(rl.NewRectangle(835, 405+offset, 75, 25), "Add") {
+		} else if rg.Button(rl.NewRectangle(x+245, 10+y+offset, 75, 25), "Add") {
 			p.AddSkill(s)
 			fmt.Println(p.Skills)
 		}
+		rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
+		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
 
-		rg.LabelButton(rl.NewRectangle(920, 405+offset, 25, 25), ">>")
+		rg.LabelButton(rl.NewRectangle(x+330, 10+y+offset, 25, 25), "#193#")
 		mousePos := rl.GetMousePosition()
-		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(920, 405+offset, 25, 25)) {
+		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(x+330, 10+y+offset, 25, 25)) {
 			skill.ViewState = true
 			addSkillInfoView = true
 			skills[i] = skill
@@ -474,15 +513,17 @@ func (p *Player) DrawAddSkills() bool {
 
 		if addSkillInfoView {
 			if s.ViewState {
-				w := float32(rl.MeasureText(s.Info, 32))
-				rg.Panel(rl.NewRectangle(950, 405+offset, w-65, 200), s.Name)
-				rg.Label(rl.NewRectangle(970, 445+offset, w, 200), fmt.Sprintf("Info --\n%s\n\nLevel - %d\nBonus From - %s Mod", s.Info, s.Level+s.StatBonus, s.StatKey))
+				textWidth := float32(rl.MeasureText(s.Info, 28))
+				rg.Panel(rl.NewRectangle(x+360, y, textWidth, 200), s.Name)
+				rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
+				rg.Label(rl.NewRectangle(x+380, 35+y, textWidth, 200), fmt.Sprintf("Info --\n%s\n\nLevel - %d\nBonus From - %s Mod", s.Info, s.Level+s.StatBonus, s.StatKey))
+				rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
 			}
 		}
 
-		offset += 25
+		offset += 30
 	}
-	if rg.Button(rl.NewRectangle(ui.CenterWithinPanelX(400, 550, 150), ui.BottomAlign(50), 150, 50), "Done") {
+	if rg.Button(rl.NewRectangle(ui.CenterWithinPanelX(x, w, 150), (y+h)-65, 150, 50), "Done") {
 		fmt.Println(len(*p.Skills))
 		if len(*p.Skills) >= 3 {
 			return true
@@ -586,24 +627,176 @@ func (p *Player) NewPlayerMethods() bool {
 	p.DrawPlayerStats()
 	p.DrawSkillSet()
 	p.DrawPlayerMethods()
-	return false
+
+	return p.DrawTypeMethods()
 }
 
 func (p *Player) DrawPlayerMethods() {
 	var offset float32 = 25
 	rg.Panel(rl.NewRectangle(0, 635, 400, 250), "Methods")
+	methods := *p.Methods
 
-	for _, m := range TestMethods {
+	for _, m := range MethodSet {
+
+		method := methods[m.Name]
+
 		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-		rg.Label(rl.NewRectangle(0, 635+offset, 400, 25), m.Name)
+		rg.Label(rl.NewRectangle(0, 635+offset, 150, 25), fmt.Sprintf("%s:", m.Name))
+
+		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
+
+		rg.LabelButton(rl.NewRectangle(370, 635+offset, 25, 25), ">>")
+
+		mousePos := rl.GetMousePosition()
+		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(370, 635+offset, 25, 25)) {
+			method.ViewState = true
+			methodView = true
+			methods[m.Name] = method
+			p.Methods = &methods
+		} else {
+			method.ViewState = false
+			methodView = false
+			methods[m.Name] = method
+			p.Methods = &methods
+		}
+
+		if methodView {
+			if method.ViewState {
+				w := float32(rl.MeasureText(method.Info, 32))
+				rg.Panel(rl.NewRectangle(400, 635+offset, w-65, 200), method.Name)
+				rg.Label(rl.NewRectangle(420, 675+offset, w, 200), fmt.Sprintf("Info --\n%s\n\n%s", method.Info, method.StatKey))
+			}
+		}
+
 		offset += 25
 
 	}
 }
 
-func (p *Player) NewMethodSlice() {
-	var m []Method
+func (p *Player) DrawTypeMethods() bool {
+	methods := []Method{}
+	title := ""
+	switch p.Type {
+	case "Gunslinger":
+		title = "Gunslinger Methods"
+		methods = *GunslingerMeth
+	case "Naturalist":
+		title = "Naturalist Methods"
+		methods = *NaturalistMeth
+	case "Chemist":
+		title = "Chemist Methods"
+		methods = *ChemistMeth
+	default:
+		fmt.Println("DEFAULT")
+	}
+	var (
+		offset float32 = 30
+		w      float32 = 415
+		h              = 120 + (float32(len(methods)) * offset)
+		y              = ui.CenterY(h)
+		x              = ui.CenterX(w)
+	)
+
+	rg.Panel(rl.NewRectangle(x, y, w, h), title)
+
+	for i, m := range methods {
+		method := methods[i]
+		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
+		rg.Label(rl.NewRectangle(x, 10+y+offset, 150, 25), m.Name)
+
+		rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
+
+		if rg.Button(rl.NewRectangle(x+160, 10+y+offset, 125, 25), "Remove") {
+			p.RemoveMethod(m)
+			fmt.Println(p.Methods)
+		} else if rg.Button(rl.NewRectangle(x+295, 10+y+offset, 75, 25), "Add") {
+			p.AddMethod(m)
+			fmt.Println(p.Methods)
+		}
+
+		rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
+		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
+
+		rg.LabelButton(rl.NewRectangle(x+380, 10+y+offset, 25, 25), "#193#")
+		mousePos := rl.GetMousePosition()
+
+		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(x+380, 10+y+offset, 25, 25)) {
+			method.ViewState = true
+			addMethodInfoView = true
+			methods[i] = method
+			StockMethodSet = &methods
+		} else {
+			method.ViewState = false
+			addMethodInfoView = false
+			methods[i] = method
+			StockMethodSet = &methods
+		}
+
+		if addMethodInfoView {
+			if m.ViewState {
+				textWidth := float32(rl.MeasureText(m.Info, 28))
+				rg.Panel(rl.NewRectangle(x+415, y, textWidth, 200), m.Name)
+				rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
+				rg.Label(rl.NewRectangle(x+440, 35+y, textWidth, 200), fmt.Sprintf("Info --\n%s\n\nBonus From - %s Mod", m.Info, m.StatKey))
+				rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
+			}
+		}
+
+		offset += 30
+	}
+
+	if rg.Button(rl.NewRectangle(ui.CenterWithinPanelX(x, w, 150), (y+h)-65, 150, 50), "Done") {
+		fmt.Println(len(*p.Methods))
+		if len(*p.Methods) >= 3 {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *Player) AddMethod(m Method) {
+	fmt.Println("Add Method Called")
+	methods := *p.Methods
+	_, ok := methods[m.Name]
+	if ok {
+		fmt.Println("Method already in methodset")
+		fmt.Println(*p.Methods)
+	} else {
+		fmt.Println("Adding Method to methodset")
+		methods[m.Name] = m
+		p.Methods = &methods
+		fmt.Println(*p.Methods)
+	}
+	p.UpdateMethodSetCopy()
+}
+
+func (p *Player) RemoveMethod(m Method) {
+	fmt.Println("Remove Method Called")
+	methods := *p.Methods
+	_, ok := methods[m.Name]
+	if ok {
+		fmt.Println("Removing Method from methodset")
+		delete(methods, m.Name)
+		p.Methods = &methods
+		fmt.Println(*p.Methods)
+	} else {
+		fmt.Println("Method does not exist in methodset")
+		fmt.Println(*p.Methods)
+	}
+	p.UpdateMethodSetCopy()
+}
+
+func (p *Player) NewMethodMap() {
+	m := make(map[string]Method)
 	p.Methods = &m
+}
+
+func (p *Player) UpdateMethodSetCopy() {
+	var methods []Method
+	for _, m := range *p.Methods {
+		methods = append(methods, m)
+	}
+	MethodSet = methods
 }
 
 func (pS *PlayerStats) RollStats() {
