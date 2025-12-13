@@ -76,7 +76,7 @@ func main() {
 
 	rl.SetConfigFlags(rl.FlagWindowResizable)
 	rl.InitWindow(screenWidth, screenHeight, "Test")
-	image := rl.LoadImage("internal/res/temp/dawn-rose.jpg")
+	image := rl.LoadImage("internal/res/temp/BGMenu.jpg")
 
 	rl.ImageResize(image, 1920, 1080)
 
@@ -111,9 +111,6 @@ func main() {
 			}
 		}
 
-		if clicked := rg.Button(rl.NewRectangle(float32(rl.GetScreenWidth())-55, ui.BottomAlign(30), 30, 30), "#142#"); clicked {
-			debug = !debug
-		}
 		if debug {
 			MouseView()
 			DebugOverlay(&gS)

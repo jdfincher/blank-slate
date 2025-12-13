@@ -27,6 +27,7 @@ type CreateState struct {
 	Skill  bool
 	Method bool
 	Inv    bool
+	Final  bool
 }
 
 func (c *CreateState) Reset() {
@@ -37,6 +38,7 @@ func (c *CreateState) Reset() {
 	c.Skill = false
 	c.Method = false
 	c.Inv = false
+	c.Final = false
 }
 
 func (s *State) StartMenu() {
@@ -72,7 +74,7 @@ func (s *State) HandleStyle() {
 func (s *State) NewGameCreate() {
 	s.Menu = false
 	s.Create = true
-
+	// TODO add a back button that swaps state back one place per screen
 	if s.CreateState.Name {
 		s.CreateState.Race = s.Player.NewPlayerName()
 		s.CreateState.Name = !s.CreateState.Race
@@ -91,9 +93,15 @@ func (s *State) NewGameCreate() {
 	} else if s.CreateState.Method {
 		s.CreateState.Inv = s.Player.NewPlayerMethods()
 		s.CreateState.Method = !s.CreateState.Inv
+	} else if s.CreateState.Inv {
+		s.CreateState.Final = s.Player.NewPlayerInventory()
+		s.CreateState.Inv = !s.CreateState.Final
+	} else if s.CreateState.Final {
+		// TODO draw final character sheet for review
+		s.Player.DrawPlayerStats()
 	}
 	// Go To Main Menu
-	if clicked := rg.Button(rl.NewRectangle(float32(rl.GetScreenWidth())-265, ui.BottomAlign(50), 200, 50), "Main Menu"); clicked {
+	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.BottomAlign(50), 200, 50), "Main Menu"); clicked {
 		s.Menu = true
 		s.Create = false
 		s.CreateState.Reset()

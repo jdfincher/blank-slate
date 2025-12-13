@@ -2,6 +2,7 @@
 package ui
 
 import (
+	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -28,4 +29,25 @@ func CenterTextX(text string, fontsize int) (X int32) {
 
 func CenterWithinPanelX(xPanel, wPanel, wRec float32) float32 {
 	return xPanel + (wPanel / 2) - (wRec / 2)
+}
+
+func LabelAlignLeft() {
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
+}
+
+func LabelAlignRight() {
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
+}
+
+func LabelAlignCenter() {
+	// Only aligns text within labels defined below
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
+}
+
+func SizeText(size int64) {
+	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, size)
+}
+
+func ResetText32() {
+	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
 }

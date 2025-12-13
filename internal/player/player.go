@@ -138,8 +138,10 @@ func (p *Player) ResetPlayer() {
 	p.NewSkillMap()
 	p.NewMethodMap()
 	p.CreateInventory()
-	p.UpdateStatsCopy(*p.Stats)
+	StatsCopy = p.UpdateStatsCopy()
 	p.UpdateSkillSetCopy()
+	p.UpdateMethodSetCopy()
+	statPointView = true
 }
 
 func (p *Player) NewPlayerName() bool {
@@ -179,6 +181,7 @@ func (p *Player) NewPlayerRace() bool {
 		fmt.Printf("Player Race is %s\n", p.Race)
 	}
 	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+130, 200, 50), "Next"); clicked {
+		StatsCopy = p.UpdateStatsCopy()
 		return true
 	}
 	// Popup Panel Race Description
@@ -222,7 +225,6 @@ func (p *Player) NewPlayerType() bool {
 		fmt.Printf("Player Type is %s\n", p.Type)
 	}
 	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+130, 200, 50), "Next"); clicked {
-		StatsCopy = p.UpdateStatsCopy(StatsCopy)
 		return true
 	}
 	// Popup Panel Type Description
@@ -259,21 +261,6 @@ func (p *Player) NewPlayerStats() bool {
 		return true
 	}
 
-	roll := false
-
-	if rg.Button(rl.NewRectangle(ui.CenterX(200), ui.BottomAlign(50)-60, 200, 50), "Roll Stats") {
-		roll = !roll
-	}
-
-	if roll {
-		p.Stats.RollStats()
-		StatsCopy = p.UpdateStatsCopy(StatsCopy)
-	}
-
-	if rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50), "Confirm Stats") {
-		statPointView = !statPointView
-	}
-
 	return false
 }
 
@@ -294,136 +281,181 @@ func (p *Player) DrawPlayerStats() {
 	rg.Label(rl.NewRectangle(panelx, panely+25, 200, 25), p.Race)
 	rg.Label(rl.NewRectangle(panelx, panely+50, 200, 25), p.Type)
 
-	var (
-		w float32 = 155
-		h float32 = 25
-	)
 	rg.Panel(rl.NewRectangle(panelx, panely+80, 400, 75), "")
 	rg.Panel(rl.NewRectangle(panelx, panely+80, 200, 75), "")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
 
-	rg.Label(rl.NewRectangle(panelx, panely+85, w, h), "Life:")
-	rg.Label(rl.NewRectangle(panelx, panely+105, w, h), "Clicks:")
-	rg.Label(rl.NewRectangle(panelx, panely+125, w, h), "Aim:")
+	rg.Label(rl.NewRectangle(panelx, panely+85, 150, 25), "Life:")
+	rg.Label(rl.NewRectangle(panelx, panely+105, 150, 25), "Clicks:")
+	rg.Label(rl.NewRectangle(panelx, panely+125, 150, 25), "Aim:")
 
-	rg.Label(rl.NewRectangle(panelx+200, panely+85, w, h), "Initiative:")
-	rg.Label(rl.NewRectangle(panelx+200, panely+105, w, h), "Interrupts:")
+	rg.Label(rl.NewRectangle(panelx+200, panely+85, 150, 25), "Initiative:")
+	rg.Label(rl.NewRectangle(panelx+200, panely+105, 150, 25), "Interrupts:")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
 
-	rg.Label(rl.NewRectangle(panelx+225, panely+125, w, h), "Money:")
+	rg.Label(rl.NewRectangle(panelx+225, panely+125, 150, 25), "Money:")
 
-	rg.Label(rl.NewRectangle(panelx+155, panely+85, 25, h), fmt.Sprint(p.Stats.Life))
-	rg.Label(rl.NewRectangle(panelx+155, panely+105, 25, h), fmt.Sprint(p.Stats.Clicks))
-	rg.Label(rl.NewRectangle(panelx+155, panely+125, 25, h), fmt.Sprint(p.Stats.Aim))
+	rg.Label(rl.NewRectangle(panelx+150, panely+85, 25, 25), fmt.Sprint(p.Stats.Life))
+	rg.Label(rl.NewRectangle(panelx+150, panely+105, 25, 25), fmt.Sprint(p.Stats.Clicks))
+	rg.Label(rl.NewRectangle(panelx+150, panely+125, 25, 25), fmt.Sprint(p.Stats.Aim))
 
-	rg.Label(rl.NewRectangle(panelx+355, panely+85, 25, h), fmt.Sprint(p.Stats.Initiative))
-	rg.Label(rl.NewRectangle(panelx+355, panely+105, 25, h), fmt.Sprint(p.Stats.Interrupts))
-	rg.Label(rl.NewRectangle(panelx+305, panely+125, 95, h), fmt.Sprint(p.Stats.Money))
+	rg.Label(rl.NewRectangle(panelx+350, panely+85, 25, 25), fmt.Sprint(p.Stats.Initiative))
+	rg.Label(rl.NewRectangle(panelx+350, panely+105, 25, 25), fmt.Sprint(p.Stats.Interrupts))
+	rg.Label(rl.NewRectangle(panelx+305, panely+125, 95, 25), fmt.Sprint(p.Stats.Money))
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
-	rg.Panel(rl.NewRectangle(panelx, panely+155, 300, 250), "Attributes")
-	rg.Panel(rl.NewRectangle(200, 200, 65, 205), "Mod")
+	rg.Panel(rl.NewRectangle(panelx, panely+155, 300, 195), "Attributes")
+	rg.Panel(rl.NewRectangle(panelx+300, panely+155, 100, 195), "Mod")
+
+	var (
+		w float32 = 250
+		h float32 = 25
+	)
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-	rg.Label(rl.NewRectangle(0, 225, w, h), "Strength:")
-	rg.Label(rl.NewRectangle(0, 245, w, h), "Dexterity:")
-	rg.Label(rl.NewRectangle(0, 265, w, h), "Fitness:")
-	rg.Label(rl.NewRectangle(0, 285, w, h), "Agility:")
-	rg.Label(rl.NewRectangle(0, 305, w, h), "Wisdom:")
-	rg.Label(rl.NewRectangle(0, 325, w, h), "Intellect:")
-	rg.Label(rl.NewRectangle(0, 345, w, h), "Charisma:")
-	rg.Label(rl.NewRectangle(0, 365, w, h), "Appearance:")
+	rg.Label(rl.NewRectangle(panelx, panely+180, w, h), "Strength:")
+	rg.Label(rl.NewRectangle(panelx, panely+200, w, h), "Dexterity:")
+	rg.Label(rl.NewRectangle(panelx, panely+220, w, h), "Fitness:")
+	rg.Label(rl.NewRectangle(panelx, panely+240, w, h), "Agility:")
+	rg.Label(rl.NewRectangle(panelx, panely+260, w, h), "Wisdom:")
+	rg.Label(rl.NewRectangle(panelx, panely+280, w, h), "Intellect:")
+	rg.Label(rl.NewRectangle(panelx, panely+300, w, h), "Charisma:")
+	rg.Label(rl.NewRectangle(panelx, panely+320, w, h), "Appearance:")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
-	rg.Label(rl.NewRectangle(155, 225, 25, h), fmt.Sprint(p.Stats.Strength))
-	rg.Label(rl.NewRectangle(155, 245, 25, h), fmt.Sprint(p.Stats.Dexterity))
-	rg.Label(rl.NewRectangle(155, 265, 25, h), fmt.Sprint(p.Stats.Fitness))
-	rg.Label(rl.NewRectangle(155, 285, 25, h), fmt.Sprint(p.Stats.Agility))
-	rg.Label(rl.NewRectangle(155, 305, 25, h), fmt.Sprint(p.Stats.Wisdom))
-	rg.Label(rl.NewRectangle(155, 325, 25, h), fmt.Sprint(p.Stats.Intellect))
-	rg.Label(rl.NewRectangle(155, 345, 25, h), fmt.Sprint(p.Stats.Charisma))
-	rg.Label(rl.NewRectangle(155, 365, 25, h), fmt.Sprint(p.Stats.Appearance))
+	rg.Label(rl.NewRectangle(panelx+250, panely+180, 25, h), fmt.Sprint(p.Stats.Strength))
+	rg.Label(rl.NewRectangle(panelx+250, panely+200, 25, h), fmt.Sprint(p.Stats.Dexterity))
+	rg.Label(rl.NewRectangle(panelx+250, panely+220, 25, h), fmt.Sprint(p.Stats.Fitness))
+	rg.Label(rl.NewRectangle(panelx+250, panely+240, 25, h), fmt.Sprint(p.Stats.Agility))
+	rg.Label(rl.NewRectangle(panelx+250, panely+260, 25, h), fmt.Sprint(p.Stats.Wisdom))
+	rg.Label(rl.NewRectangle(panelx+250, panely+280, 25, h), fmt.Sprint(p.Stats.Intellect))
+	rg.Label(rl.NewRectangle(panelx+250, panely+300, 25, h), fmt.Sprint(p.Stats.Charisma))
+	rg.Label(rl.NewRectangle(panelx+250, panely+320, 25, h), fmt.Sprint(p.Stats.Appearance))
 
-	rg.Line(rl.NewRectangle(200, 238, 65, 1), fmt.Sprintf("> %d", p.StatMods.Strength))
-	rg.Line(rl.NewRectangle(200, 258, 65, 1), fmt.Sprintf("> %d", p.StatMods.Dexterity))
-	rg.Line(rl.NewRectangle(200, 278, 65, 1), fmt.Sprintf("> %d", p.StatMods.Fitness))
-	rg.Line(rl.NewRectangle(200, 298, 65, 1), fmt.Sprintf("> %d", p.StatMods.Agility))
-	rg.Line(rl.NewRectangle(200, 318, 65, 1), fmt.Sprintf("> %d", p.StatMods.Wisdom))
-	rg.Line(rl.NewRectangle(200, 338, 65, 1), fmt.Sprintf("> %d", p.StatMods.Intellect))
-	rg.Line(rl.NewRectangle(200, 358, 65, 1), fmt.Sprintf("> %d", p.StatMods.Charisma))
-	rg.Line(rl.NewRectangle(200, 378, 65, 1), fmt.Sprintf("> %d", p.StatMods.Appearance))
+	rg.Line(rl.NewRectangle(panelx+300, panely+180, 100, h), fmt.Sprintf("> %d", p.StatMods.Strength))
+	rg.Line(rl.NewRectangle(panelx+300, panely+200, 100, h), fmt.Sprintf("> %d", p.StatMods.Dexterity))
+	rg.Line(rl.NewRectangle(panelx+300, panely+220, 100, h), fmt.Sprintf("> %d", p.StatMods.Fitness))
+	rg.Line(rl.NewRectangle(panelx+300, panely+240, 100, h), fmt.Sprintf("> %d", p.StatMods.Agility))
+	rg.Line(rl.NewRectangle(panelx+300, panely+260, 100, h), fmt.Sprintf("> %d", p.StatMods.Wisdom))
+	rg.Line(rl.NewRectangle(panelx+300, panely+280, 100, h), fmt.Sprintf("> %d", p.StatMods.Intellect))
+	rg.Line(rl.NewRectangle(panelx+300, panely+300, 100, h), fmt.Sprintf("> %d", p.StatMods.Charisma))
+	rg.Line(rl.NewRectangle(panelx+300, panely+320, 100, h), fmt.Sprintf("> %d", p.StatMods.Appearance))
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 32)
 }
 
-func (p *Player) UpdateStatsCopy(stats PlayerStats) PlayerStats {
+func (p *Player) UpdateStatsCopy() PlayerStats {
 	return *p.Stats
 }
 
 func (p *Player) DistributeStatPoints() {
+	var (
+		offset float32 = 30
+		w      float32 = 300
+		h      float32 = 350
+		x              = ui.CenterX(w)
+		y              = ui.CenterY(h)
+	)
 	start := StatsCopy
-	rg.Panel(rl.NewRectangle(265, 200, 60, 205), fmt.Sprint(p.StatPoints))
+	rg.Panel(rl.NewRectangle(x, y, w, h), fmt.Sprintf("Attribute Points - %d", p.StatPoints))
+	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
 	// Strength
-	if rg.LabelButton(rl.NewRectangle(275, 225, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+offset, 175, 25), "Strength:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+offset, 25, 25), fmt.Sprintf("%d", p.Stats.Strength))
+	if rg.Button(rl.NewRectangle(x+215, y+offset, 30, 25), "#120#") {
 		p.Stats.Strength = p.DecrementStat(p.Stats.Strength, start.Strength)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 225, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+offset, 30, 25), "#121#") {
 		p.Stats.Strength = p.IncrementStat(p.Stats.Strength)
 	}
 
 	// Dexterity
-	if rg.LabelButton(rl.NewRectangle(275, 245, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*2), 175, 25), "Dexterity:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*2), 25, 25), fmt.Sprintf("%d", p.Stats.Dexterity))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*2), 30, 25), "#120#") {
 		p.Stats.Dexterity = p.DecrementStat(p.Stats.Dexterity, start.Dexterity)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 245, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*2), 30, 25), "#121#") {
 		p.Stats.Dexterity = p.IncrementStat(p.Stats.Dexterity)
 	}
 
 	// Fitness
-	if rg.LabelButton(rl.NewRectangle(275, 265, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*3), 175, 25), "Fitness:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*3), 25, 25), fmt.Sprintf("%d", p.Stats.Fitness))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*3), 30, 25), "#120#") {
 		p.Stats.Fitness = p.DecrementStat(p.Stats.Fitness, start.Fitness)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 265, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*3), 30, 25), "#121#") {
 		p.Stats.Fitness = p.IncrementStat(p.Stats.Fitness)
 	}
 
 	// Agility
-	if rg.LabelButton(rl.NewRectangle(275, 285, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*4), 175, 25), "Agility:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*4), 25, 25), fmt.Sprintf("%d", p.Stats.Agility))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*4), 30, 25), "#120#") {
 		p.Stats.Agility = p.DecrementStat(p.Stats.Agility, start.Agility)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 285, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*4), 30, 25), "#121#") {
 		p.Stats.Agility = p.IncrementStat(p.Stats.Agility)
 	}
 
 	// Wisdom
-	if rg.LabelButton(rl.NewRectangle(275, 305, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*5), 175, 25), "Wisdom:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*5), 25, 25), fmt.Sprintf("%d", p.Stats.Wisdom))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*5), 30, 25), "#120#") {
 		p.Stats.Wisdom = p.DecrementStat(p.Stats.Wisdom, start.Wisdom)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 305, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*5), 30, 25), "#121#") {
 		p.Stats.Wisdom = p.IncrementStat(p.Stats.Wisdom)
 	}
 	// Intellect
-	if rg.LabelButton(rl.NewRectangle(275, 325, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*6), 175, 25), "Intellect:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*6), 25, 25), fmt.Sprintf("%d", p.Stats.Intellect))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*6), 30, 25), "#120#") {
 		p.Stats.Intellect = p.DecrementStat(p.Stats.Intellect, start.Intellect)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 325, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*6), 30, 25), "#121#") {
 		p.Stats.Intellect = p.IncrementStat(p.Stats.Intellect)
 	}
 	// Charisma
-	if rg.LabelButton(rl.NewRectangle(275, 345, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*7), 175, 25), "Charisma:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*7), 25, 25), fmt.Sprintf("%d", p.Stats.Charisma))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*7), 30, 25), "#120#") {
 		p.Stats.Charisma = p.DecrementStat(p.Stats.Charisma, start.Charisma)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 345, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*7), 30, 25), "#121#") {
 		p.Stats.Charisma = p.IncrementStat(p.Stats.Charisma)
 	}
 	// Appearance
-	if rg.LabelButton(rl.NewRectangle(275, 365, 10, 25), "-") {
+	ui.LabelAlignRight()
+	rg.Label(rl.NewRectangle(x, y+(offset*8), 175, 25), "Appearance:")
+	ui.LabelAlignLeft()
+	rg.Label(rl.NewRectangle(x+175, y+(offset*8), 25, 25), fmt.Sprintf("%d", p.Stats.Appearance))
+	if rg.Button(rl.NewRectangle(x+215, y+(offset*8), 30, 25), "#120#") {
 		p.Stats.Appearance = p.DecrementStat(p.Stats.Appearance, start.Appearance)
 	}
-	if rg.LabelButton(rl.NewRectangle(300, 365, 10, 25), "+") {
+	if rg.Button(rl.NewRectangle(x+250, y+(offset*8), 30, 25), "#121#") {
 		p.Stats.Appearance = p.IncrementStat(p.Stats.Appearance)
+	}
+	if rg.Button(rl.NewRectangle(ui.CenterWithinPanelX(x, w, 200), y+h-65, 200, 50), "Done") {
+		statPointView = !statPointView
+		StatsCopy = p.UpdateStatsCopy()
 	}
 }
 
@@ -467,28 +499,55 @@ func (p *Player) SetRaceStats(race PlayerStats) {
 	p.StatPoints = 5
 }
 
-func (p *Player) NewPlayerInventory() bool {
-	return false
+func (p *Player) SetStatMods() {
+	p.StatMods.Strength = CalcStatMod(p.Stats.Strength)
+	p.StatMods.Dexterity = CalcStatMod(p.Stats.Dexterity)
+	p.StatMods.Fitness = CalcStatMod(p.Stats.Fitness)
+	p.StatMods.Agility = CalcStatMod(p.Stats.Agility)
+	p.StatMods.Wisdom = CalcStatMod(p.Stats.Wisdom)
+	p.StatMods.Intellect = CalcStatMod(p.Stats.Intellect)
+	p.StatMods.Charisma = CalcStatMod(p.Stats.Charisma)
+	p.StatMods.Appearance = CalcStatMod(p.Stats.Appearance)
+	p.Stats.Initiative = max(p.StatMods.Dexterity, p.StatMods.Agility)
 }
 
-func (p *Player) CreateInventory() {
-	var armor []gameobj.Armor
-	var weapon []gameobj.Weapon
-	var item []gameobj.Item
-	p.Inventory = &PlayerInventory{
-		Armor:  &armor,
-		Weapon: &weapon,
-		Item:   &item,
+func CalcStatMod(v int) int {
+	switch v {
+	case 12:
+		return 1
+	case 13:
+		return 1
+	case 14:
+		return 2
+	case 15:
+		return 2
+	case 16:
+		return 3
+	case 17:
+		return 3
+	case 18:
+		return 4
+	case 19:
+		return 4
+	case 20:
+		return 5
+	case 21:
+		return 5
+	case 22:
+		return 6
+	case 23:
+		return 6
+	case 24:
+		return 7
+	default:
+		return 0
 	}
 }
 
 func (p *Player) NewPlayerSkills() bool {
-	if p.DrawAddSkills() {
-		return true
-	}
 	p.DrawPlayerStats()
-	p.DrawSkillSet()
-	return false
+	p.DrawPlayerSkills()
+	return p.DrawAddSkills()
 }
 
 func (p *Player) DrawAddSkills() bool {
@@ -557,19 +616,24 @@ func (p *Player) DrawAddSkills() bool {
 	return false
 }
 
-func (p *Player) DrawSkillSet() {
-	var offset float32 = 25
-	rg.Panel(rl.NewRectangle(0, 405, 400, 230), "Skills")
+func (p *Player) DrawPlayerSkills() {
+	var (
+		offset float32 = 25
+		x      float32 = 25
+		y      float32 = 375
+		w      float32 = 400
+		h              = float32((len(*p.Skills) * 25) + 30)
+	)
+	rg.Panel(rl.NewRectangle(x, y, w, h), "Skills")
 	skills := *p.Skills
-
 	for _, s := range SkillSet {
-
+		ui.SizeText(28)
 		skill := skills[s.Name]
 
-		rg.LabelButton(rl.NewRectangle(370, 405+offset, 25, 25), ">>")
+		rg.LabelButton(rl.NewRectangle(370+x, y+offset, 25, 25), ">>")
 
 		mousePos := rl.GetMousePosition()
-		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(370, 405+offset, 25, 25)) {
+		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(370+x, y+offset, 25, 25)) {
 			skill.ViewState = true
 			skillView = true
 			skills[s.Name] = skill
@@ -582,19 +646,20 @@ func (p *Player) DrawSkillSet() {
 		}
 
 		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-		rg.Label(rl.NewRectangle(0, 405+offset, 150, 25), s.Name)
+		rg.Label(rl.NewRectangle(x, y+offset, 150, 25), s.Name)
 		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
-		rg.Label(rl.NewRectangle(150, 405+offset, 250, 25), fmt.Sprintf(": %d - %s", s.Level+s.StatBonus, s.StatKey))
+		rg.Label(rl.NewRectangle(150+x, y+offset, 250, 25), fmt.Sprintf(": %d - %s", s.Level+s.StatBonus, s.StatKey))
 		if skillView {
 			if skill.ViewState {
 				w := float32(rl.MeasureText(skill.Info, 32))
-				rg.Panel(rl.NewRectangle(400, 405+offset, w-65, 200), skill.Name)
-				rg.Label(rl.NewRectangle(420, 445+offset, w, 200), fmt.Sprintf("Info --\n%s\n\nLevel - %d\nBonus From - %s Mod", skill.Info, skill.Level+skill.StatBonus, skill.StatKey))
+				rg.Panel(rl.NewRectangle(400+x, y+offset, w-65, 200), skill.Name)
+				rg.Label(rl.NewRectangle(420+x, 40+y+offset, w, 200), fmt.Sprintf("Info --\n%s\n\nLevel - %d\nBonus From - %s Mod", skill.Info, skill.Level+skill.StatBonus, skill.StatKey))
 			}
 		}
 
 		offset += 25
 	}
+	ui.ResetText32()
 }
 
 func (p *Player) AddSkill(skill Skill) {
@@ -649,30 +714,35 @@ func (p *Player) UpdateSkillSetCopy() {
 
 func (p *Player) NewPlayerMethods() bool {
 	p.DrawPlayerStats()
-	p.DrawSkillSet()
+	p.DrawPlayerSkills()
 	p.DrawPlayerMethods()
 
 	return p.DrawTypeMethods()
 }
 
 func (p *Player) DrawPlayerMethods() {
-	var offset float32 = 25
-	rg.Panel(rl.NewRectangle(0, 635, 400, 250), "Methods")
+	var (
+		offset float32 = 25
+		x      float32 = 25
+		y              = float32(375 + ((len(*p.Skills) * 25) + 30))
+		w      float32 = 400
+		h              = float32((len(*p.Methods) * 25) + 30)
+	)
+	rg.Panel(rl.NewRectangle(x, y, w, h), "Methods")
 	methods := *p.Methods
 
 	for _, m := range MethodSet {
-
+		ui.SizeText(28)
 		method := methods[m.Name]
+		ui.LabelAlignRight()
+		rg.Label(rl.NewRectangle(x, y+offset, 150, 25), m.Name)
 
-		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-		rg.Label(rl.NewRectangle(0, 635+offset, 150, 25), fmt.Sprintf("%s:", m.Name))
-
-		rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
-
-		rg.LabelButton(rl.NewRectangle(370, 635+offset, 25, 25), ">>")
+		ui.LabelAlignLeft()
+		rg.Label(rl.NewRectangle(x+150, y+offset, 200, 25), fmt.Sprintf(": %d - %s", m.StatBonus, m.StatKey))
+		rg.LabelButton(rl.NewRectangle(370+x, y+offset, 25, 25), ">>")
 
 		mousePos := rl.GetMousePosition()
-		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(370, 635+offset, 25, 25)) {
+		if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(370+x, y+offset, 25, 25)) {
 			method.ViewState = true
 			methodView = true
 			methods[m.Name] = method
@@ -687,14 +757,15 @@ func (p *Player) DrawPlayerMethods() {
 		if methodView {
 			if method.ViewState {
 				w := float32(rl.MeasureText(method.Info, 32))
-				rg.Panel(rl.NewRectangle(400, 635+offset, w-65, 200), method.Name)
-				rg.Label(rl.NewRectangle(420, 675+offset, w, 200), fmt.Sprintf("Info --\n%s\n\n%s", method.Info, method.StatKey))
+				rg.Panel(rl.NewRectangle(400+x, y+offset, w-65, 200), method.Name)
+				rg.Label(rl.NewRectangle(420+x, 40+y+offset, w, 200), fmt.Sprintf("Info --\n%s\n\n%s", method.Info, method.StatKey))
 			}
 		}
 
 		offset += 25
 
 	}
+	ui.ResetText32()
 }
 
 func (p *Player) DrawTypeMethods() bool {
@@ -771,7 +842,7 @@ func (p *Player) DrawTypeMethods() bool {
 
 	if rg.Button(rl.NewRectangle(ui.CenterWithinPanelX(x, w, 150), (y+h)-65, 150, 50), "Done") {
 		fmt.Println(len(*p.Methods))
-		if len(*p.Methods) >= 3 {
+		if len(*p.Methods) >= 1 {
 			return true
 		}
 	}
@@ -823,79 +894,34 @@ func (p *Player) UpdateMethodSetCopy() {
 	MethodSet = methods
 }
 
-func (pS *PlayerStats) RollStats() {
-	pS.Level = 1
-	pS.Life = RollDiceSim(4, 6)
-	pS.Clicks = 6
-	pS.Initiative = 0
-	pS.Aim = 1
-	pS.Interrupts = 0
-	pS.Money = RollDiceSim(4, 6)
-	pS.Strength = RollDiceSim(4, 6)
-	pS.Dexterity = RollDiceSim(4, 6)
-	pS.Fitness = RollDiceSim(4, 6)
-	pS.Agility = RollDiceSim(4, 6)
-	pS.Wisdom = RollDiceSim(4, 6)
-	pS.Intellect = RollDiceSim(4, 6)
-	pS.Charisma = RollDiceSim(4, 6)
-	pS.Appearance = RollDiceSim(4, 6)
+func (p *Player) NewPlayerInventory() bool {
+	p.DrawPlayerStats()
+	p.DrawPlayerSkills()
+	p.DrawPlayerMethods()
+	p.DrawPlayerInventory()
+	return false
 }
 
-func RollDiceSim(dice, sides int) int {
-	lowest := sides + 1
-	var total int
-	for range dice {
-		num := int(rl.GetRandomValue(1, int32(sides)))
-		total += num
-		if num < lowest {
-			lowest = num
-		}
-	}
+func (p *Player) DrawPlayerInventory() {
+	var (
+		offset float32 = 25
+		w      float32 = 400
+		h              = float32(rl.GetScreenHeight() - 50)
+		x              = float32(rl.GetScreenWidth() - 425)
+		y      float32 = 25
+	)
 
-	return total - lowest
+	rg.Panel(rl.NewRectangle(x, y, w, h), "Inventory")
+	rg.Label(rl.NewRectangle(x+offset, y+offset, 200, 25), "Test Item")
 }
 
-func (p *Player) SetStatMods() {
-	p.StatMods.Strength = CalcStatMod(p.Stats.Strength)
-	p.StatMods.Dexterity = CalcStatMod(p.Stats.Dexterity)
-	p.StatMods.Fitness = CalcStatMod(p.Stats.Fitness)
-	p.StatMods.Agility = CalcStatMod(p.Stats.Agility)
-	p.StatMods.Wisdom = CalcStatMod(p.Stats.Wisdom)
-	p.StatMods.Intellect = CalcStatMod(p.Stats.Intellect)
-	p.StatMods.Charisma = CalcStatMod(p.Stats.Charisma)
-	p.StatMods.Appearance = CalcStatMod(p.Stats.Appearance)
-	p.Stats.Initiative = max(p.StatMods.Dexterity, p.StatMods.Agility)
-}
-
-func CalcStatMod(v int) int {
-	switch v {
-	case 12:
-		return 1
-	case 13:
-		return 1
-	case 14:
-		return 2
-	case 15:
-		return 2
-	case 16:
-		return 3
-	case 17:
-		return 3
-	case 18:
-		return 4
-	case 19:
-		return 4
-	case 20:
-		return 5
-	case 21:
-		return 5
-	case 22:
-		return 6
-	case 23:
-		return 6
-	case 24:
-		return 7
-	default:
-		return 0
+func (p *Player) CreateInventory() {
+	var armor []gameobj.Armor
+	var weapon []gameobj.Weapon
+	var item []gameobj.Item
+	p.Inventory = &PlayerInventory{
+		Armor:  &armor,
+		Weapon: &weapon,
+		Item:   &item,
 	}
 }
