@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	statView          = true
+	StatView          = true
 	statPointView     = true
 	skillView         = false
 	methodView        = false
@@ -152,7 +152,7 @@ func (p *Player) NewPlayerName() bool {
 	}
 
 	rec := rl.NewRectangle(ui.CenterX(300), ui.CenterY(50), 300, 50)
-	rg.TextBox(rec, &p.Name, 25, true)
+	rg.TextBox(rec, &p.Name, 14, true)
 	return false
 }
 
@@ -181,21 +181,22 @@ func (p *Player) NewPlayerRace() bool {
 	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+130, 200, 50), "Next"); clicked {
 		return true
 	}
-
+	// Popup Panel Race Description
 	mousePos := rl.GetMousePosition()
 	// Human
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
 	if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)-60, 200, 50)) {
 		rg.Panel(rl.NewRectangle(x, y, w, h), "Human")
-		rg.Label(rl.NewRectangle(x, y+100, w, h), HumanDesc)
+		rg.Label(rl.NewRectangle(x, y+75, w, h), HumanDesc)
 
+		// Mutant
 	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50)) {
 		rg.Panel(rl.NewRectangle(x, y, w, h), "Mutant")
-		rg.Label(rl.NewRectangle(x, y+100, w, h), HumanDesc)
-
+		rg.Label(rl.NewRectangle(x, y+75, w, h), MutantDesc)
+		// Cyborg
 	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+60, 200, 50)) {
 		rg.Panel(rl.NewRectangle(x, y, w, h), "Cyborg")
-		rg.Label(rl.NewRectangle(x, y+100, w, h), CyborgDesc)
+		rg.Label(rl.NewRectangle(x, y+75, w, h), CyborgDesc)
 
 	}
 
@@ -204,6 +205,12 @@ func (p *Player) NewPlayerRace() bool {
 
 func (p *Player) NewPlayerType() bool {
 	p.DrawPlayerStats()
+	var (
+		w float32 = 945
+		h float32 = 250
+		x         = ui.CenterX(w)
+		y         = ui.CenterY(h) - h
+	)
 	if gun := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)-60, 200, 50), "Gunslinger"); gun {
 		p.Type = "Gunslinger"
 		fmt.Printf("Player Type is %s\n", p.Type)
@@ -218,16 +225,31 @@ func (p *Player) NewPlayerType() bool {
 		StatsCopy = p.UpdateStatsCopy(StatsCopy)
 		return true
 	}
+	// Popup Panel Type Description
+	mousePos := rl.GetMousePosition()
+	// Gunslinger
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
+	if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)-60, 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Gunslinger")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), GunslingerDesc)
+
+		// Mutant
+	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Naturalist")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), NaturalistDesc)
+
+		// Cyborg
+	} else if rl.CheckCollisionPointRec(mousePos, rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+60, 200, 50)) {
+		rg.Panel(rl.NewRectangle(x, y, w, h), "Chemist")
+		rg.Label(rl.NewRectangle(x, y+100, w, h), ChemistDesc)
+
+	}
+
 	return false
 }
 
 func (p *Player) NewPlayerStats() bool {
-	if rl.IsKeyPressed(rl.KeyC) {
-		statView = !statView
-	}
-	if statView {
-		p.DrawPlayerStats()
-	}
+	p.DrawPlayerStats()
 
 	if statPointView {
 		p.DistributeStatPoints()
@@ -249,57 +271,59 @@ func (p *Player) NewPlayerStats() bool {
 	}
 
 	if rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50), "Confirm Stats") {
-		if p.StatPoints == 0 {
-			statPointView = !statPointView
-		} else {
-			rg.Label(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+60, 200, 50), "Attribute")
-		}
+		statPointView = !statPointView
 	}
 
 	return false
 }
 
 func (p *Player) DrawPlayerStats() {
+	var (
+		panelx float32 = 25
+		panely float32 = 25
+		panelw float32 = 400
+		panelh         = float32(rl.GetScreenHeight() - 50)
+	)
 	// rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
-	bounds := rl.NewRectangle(0, 0, 400, float32(rl.GetScreenHeight()))
-	rg.Panel(bounds, fmt.Sprintf("Character -- Level %d", p.Stats.Level))
+	bounds := rl.NewRectangle(panelx, panely, panelw, panelh)
+	rg.Panel(bounds, fmt.Sprintf("%s -- Level %d", p.Name, p.Stats.Level))
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 28)
-	rg.Label(rl.NewRectangle(25, 25, 200, 50), p.Name)
-	rg.Label(rl.NewRectangle(25, 50, 200, 50), p.Race)
-	rg.Label(rl.NewRectangle(25, 75, 200, 50), p.Type)
+
+	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
+	rg.Label(rl.NewRectangle(panelx, panely+25, 200, 25), p.Race)
+	rg.Label(rl.NewRectangle(panelx, panely+50, 200, 25), p.Type)
 
 	var (
 		w float32 = 155
 		h float32 = 25
 	)
-	rg.Panel(rl.NewRectangle(0, 125, 400, 75), "")
-	rg.Panel(rl.NewRectangle(0, 125, 200, 75), "")
+	rg.Panel(rl.NewRectangle(panelx, panely+80, 400, 75), "")
+	rg.Panel(rl.NewRectangle(panelx, panely+80, 200, 75), "")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))
-	rg.SetStyle(rg.DEFAULT, rg.TEXT_SIZE, 26)
 
-	rg.Label(rl.NewRectangle(0, 130, w, h), "Life:")
-	rg.Label(rl.NewRectangle(0, 150, w, h), "Clicks:")
-	rg.Label(rl.NewRectangle(0, 170, w, h), "Aim:")
+	rg.Label(rl.NewRectangle(panelx, panely+85, w, h), "Life:")
+	rg.Label(rl.NewRectangle(panelx, panely+105, w, h), "Clicks:")
+	rg.Label(rl.NewRectangle(panelx, panely+125, w, h), "Aim:")
 
-	rg.Label(rl.NewRectangle(200, 130, w, h), "Initiative:")
-	rg.Label(rl.NewRectangle(200, 150, w, h), "Interrupts:")
+	rg.Label(rl.NewRectangle(panelx+200, panely+85, w, h), "Initiative:")
+	rg.Label(rl.NewRectangle(panelx+200, panely+105, w, h), "Interrupts:")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_LEFT))
 
-	rg.Label(rl.NewRectangle(225, 170, w, h), "Money:")
+	rg.Label(rl.NewRectangle(panelx+225, panely+125, w, h), "Money:")
 
-	rg.Label(rl.NewRectangle(155, 130, 25, h), fmt.Sprint(p.Stats.Life))
-	rg.Label(rl.NewRectangle(155, 150, 25, h), fmt.Sprint(p.Stats.Clicks))
-	rg.Label(rl.NewRectangle(155, 170, 25, h), fmt.Sprint(p.Stats.Aim))
+	rg.Label(rl.NewRectangle(panelx+155, panely+85, 25, h), fmt.Sprint(p.Stats.Life))
+	rg.Label(rl.NewRectangle(panelx+155, panely+105, 25, h), fmt.Sprint(p.Stats.Clicks))
+	rg.Label(rl.NewRectangle(panelx+155, panely+125, 25, h), fmt.Sprint(p.Stats.Aim))
 
-	rg.Label(rl.NewRectangle(355, 130, 25, h), fmt.Sprint(p.Stats.Initiative))
-	rg.Label(rl.NewRectangle(355, 150, 25, h), fmt.Sprint(p.Stats.Interrupts))
-	rg.Label(rl.NewRectangle(300, 170, 95, h), fmt.Sprint(p.Stats.Money))
+	rg.Label(rl.NewRectangle(panelx+355, panely+85, 25, h), fmt.Sprint(p.Stats.Initiative))
+	rg.Label(rl.NewRectangle(panelx+355, panely+105, 25, h), fmt.Sprint(p.Stats.Interrupts))
+	rg.Label(rl.NewRectangle(panelx+305, panely+125, 95, h), fmt.Sprint(p.Stats.Money))
 
 	rg.SetStyle(rg.DEFAULT, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_CENTER))
-	rg.Panel(rl.NewRectangle(0, 200, 200, 205), "Attribute")
+	rg.Panel(rl.NewRectangle(panelx, panely+155, 300, 250), "Attributes")
 	rg.Panel(rl.NewRectangle(200, 200, 65, 205), "Mod")
 
 	rg.SetStyle(rg.LABEL, rg.TEXT_ALIGNMENT, int64(rg.TEXT_ALIGN_RIGHT))

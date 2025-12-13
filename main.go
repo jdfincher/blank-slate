@@ -76,7 +76,7 @@ func main() {
 
 	rl.SetConfigFlags(rl.FlagWindowResizable)
 	rl.InitWindow(screenWidth, screenHeight, "Test")
-	image := rl.LoadImage("internal/res/temp/BGMenu.jpg")
+	image := rl.LoadImage("internal/res/temp/dawn-rose.jpg")
 
 	rl.ImageResize(image, 1920, 1080)
 
@@ -99,6 +99,7 @@ func main() {
 
 		if gS.Menu {
 			rl.DrawTexture(bg, 0, 0, rl.White)
+
 			gS.StartMenu()
 
 		} else if gS.Create {
