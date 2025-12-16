@@ -120,6 +120,7 @@ func main() {
 		if pressed := rl.IsKeyPressed(rl.KeyLeftControl); pressed {
 			debug = !debug
 		}
+
 		rl.EndDrawing()
 	}
 	rl.UnloadTexture(bg)

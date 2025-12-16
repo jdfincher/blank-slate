@@ -2,24 +2,18 @@
 package gameobj
 
 type Weapon struct {
-	Name        string
-	Price       int
-	DamageMin   int
-	DamageMax   int
-	DamageBonus int
-	Range       int
-	Reload      int
-	Critical    int
-	AimBonus    int
-	Capacity    int
-	Weight      int
-	Count       int
-}
-
-type DamageRange struct {
-	Max   int
-	Min   int
-	Bonus int
+	Name     string
+	Price    int
+	DmgMin   int
+	DmgMax   int
+	Range    int
+	Reload   int
+	Capacity int
+	Critical int
+	AimBonus int
+	Caliber  int
+	Count    int
+	Type     string
 }
 
 type Armor struct {

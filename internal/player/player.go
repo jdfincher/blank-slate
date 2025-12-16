@@ -85,23 +85,22 @@ type Player struct {
 }
 
 type PlayerStats struct {
-	Level       int
-	Life        int
-	Clicks      int
-	Initiative  int
-	Aim         int
-	Interrupts  int
-	Money       int
-	Strength    int
-	Dexterity   int
-	Fitness     int
-	Agility     int
-	Wisdom      int
-	Intellect   int
-	Charisma    int
-	Appearance  int
-	Defense     int
-	DamageRange *gameobj.DamageRange
+	Level      int
+	Life       int
+	Clicks     int
+	Initiative int
+	Aim        int
+	Interrupts int
+	Money      int
+	Strength   int
+	Dexterity  int
+	Fitness    int
+	Agility    int
+	Wisdom     int
+	Intellect  int
+	Charisma   int
+	Appearance int
+	Defense    int
 }
 
 type PlayerStatMods struct {
@@ -116,9 +115,9 @@ type PlayerStatMods struct {
 }
 
 type PlayerInventory struct {
-	Armor  *[]gameobj.Armor
-	Weapon *[]gameobj.Weapon
-	Item   *[]gameobj.Item
+	Armor  *map[string]gameobj.Armor
+	Weapon *map[string]gameobj.Weapon
+	Item   *map[string]gameobj.Item
 }
 
 type Equipped struct {
@@ -137,7 +136,7 @@ func (p *Player) ResetPlayer() {
 	p.StatPoints = 0
 	p.NewSkillMap()
 	p.NewMethodMap()
-	p.CreateInventory()
+	p.NewInventoryMap()
 	StatsCopy = p.UpdateStatsCopy()
 	p.UpdateSkillSetCopy()
 	p.UpdateMethodSetCopy()
@@ -899,7 +898,7 @@ func (p *Player) NewPlayerInventory() bool {
 	p.DrawPlayerSkills()
 	p.DrawPlayerMethods()
 	p.DrawPlayerInventory()
-	return false
+	return p.DrawAddItemStart()
 }
 
 func (p *Player) DrawPlayerInventory() {
@@ -912,13 +911,46 @@ func (p *Player) DrawPlayerInventory() {
 	)
 
 	rg.Panel(rl.NewRectangle(x, y, w, h), "Inventory")
-	rg.Label(rl.NewRectangle(x+offset, y+offset, 200, 25), "Test Item")
+	rg.Label(rl.NewRectangle(x+offset, y+offset, 200, 25), gameobj.Revolver22.Name)
 }
 
-func (p *Player) CreateInventory() {
-	var armor []gameobj.Armor
-	var weapon []gameobj.Weapon
-	var item []gameobj.Item
+func (p *Player) DrawAddItemStart() bool {
+	var (
+		offset float32 = 25
+		w      float32 = 1000
+		h      float32 = 500
+		x              = ui.CenterX(w)
+		y              = ui.CenterY(h)
+	)
+	switch p.Type {
+	case "Gunslinger":
+		fmt.Println("Gunslinger Options")
+	case "Naturalist":
+		fmt.Println("Naturalist Options")
+	case "Chemist":
+		fmt.Println("Chemist Options")
+	}
+
+	items := []gameobj.Weapon{gameobj.Revolver22, gameobj.Revolver38}
+
+	rg.Panel(rl.NewRectangle(x, y, w, h), fmt.Sprintf("%s Starting Items", p.Type))
+
+	for _, item := range items {
+		ui.LabelAlignRight()
+		rg.Label(rl.NewRectangle(x, y+offset, 200, 25), item.Name)
+		rg.Label(rl.NewRectangle(x+200, y+offset, 75, 25), item.Type)
+
+		rg.Button(rl.NewRectangle(x+275, y+offset, 150, 25), "Add")
+		offset += 25
+	}
+
+	return false
+}
+
+func (p *Player) NewInventoryMap() {
+	var armor map[string]gameobj.Armor
+	var weapon map[string]gameobj.Weapon
+	var item map[string]gameobj.Item
 	p.Inventory = &PlayerInventory{
 		Armor:  &armor,
 		Weapon: &weapon,
