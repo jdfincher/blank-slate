@@ -69,6 +69,7 @@ func main() {
 		Create:      false,
 		Idle:        false,
 		Combat:      false,
+		Quit:        false,
 		Player:      new(player.Player),
 		CreateState: new(gamestate.CreateState),
 	}
@@ -109,6 +110,8 @@ func main() {
 			if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.BottomAlign(50), 200, 50), "Back"); clicked {
 				gS.Menu = true
 			}
+		} else if gS.Quit {
+			break
 		}
 
 		if debug {

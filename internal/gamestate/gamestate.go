@@ -17,6 +17,7 @@ type State struct {
 	Combat      bool
 	Player      *player.Player
 	CreateState *CreateState
+	Quit        bool
 }
 
 type CreateState struct {
@@ -47,6 +48,7 @@ func (s *State) StartMenu() {
 	s.Idle = false
 	s.Combat = false
 	s.Player.ResetPlayer()
+	s.Quit = false
 
 	if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50), 200, 50), "New Game"); clicked {
 		fmt.Println("New Game Clicked")
@@ -58,6 +60,9 @@ func (s *State) StartMenu() {
 		s.Menu = false
 		s.Idle = true
 
+	} else if clicked := rg.Button(rl.NewRectangle(ui.CenterX(200), ui.CenterY(50)+120, 200, 50), "Quit"); clicked {
+		s.Quit = true
+		s.Menu = false
 	}
 }
 
