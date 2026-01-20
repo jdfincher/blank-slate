@@ -922,23 +922,27 @@ func (p *Player) DrawAddItemStart() bool {
 		x              = ui.CenterX(w)
 		y              = ui.CenterY(h)
 	)
+
+	items := []gameobj.Weapon{}
+
 	switch p.Type {
 	case "Gunslinger":
+		items = gameobj.GunslingerStartWeapon
 		fmt.Println("Gunslinger Options")
 	case "Naturalist":
+		items = gameobj.NaturalistStartWeapon
 		fmt.Println("Naturalist Options")
 	case "Chemist":
+		items = gameobj.ChemistStartWeapon
 		fmt.Println("Chemist Options")
 	}
-
-	items := []gameobj.Weapon{gameobj.Revolver22, gameobj.Revolver38}
 
 	rg.Panel(rl.NewRectangle(x, y, w, h), fmt.Sprintf("%s Starting Items", p.Type))
 
 	for _, item := range items {
 		ui.LabelAlignRight()
 		rg.Label(rl.NewRectangle(x, y+offset, 200, 25), item.Name)
-		rg.Label(rl.NewRectangle(x+200, y+offset, 75, 25), item.Type)
+		rg.Label(rl.NewRectangle(x+200, y+offset, 75, 25), gameobj.WeaponTypes[item.Type])
 
 		rg.Button(rl.NewRectangle(x+275, y+offset, 150, 25), "Add")
 		offset += 25

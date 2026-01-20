@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -12,16 +11,14 @@ import (
 )
 
 const (
-	screenWidth  = 1920
-	screenHeight = 1080
+	screenWidth  = 800
+	screenHeight = 400
 )
 
 func DebugOverlay(gS *gamestate.State) {
 	var (
-		pos = rl.GetMousePosition()
-
-		mouseX  = int32(pos.X)
-		mouseY  = int32(pos.Y)
+		mouseX  = rl.GetMouseX()
+		mouseY  = rl.GetMouseY()
 		Yoffset = 125
 	)
 	rl.DrawRectangle(int32(rl.GetScreenWidth()-150), 0, 150, 150, rl.Black)
@@ -67,9 +64,6 @@ func MouseView() {
 }
 
 func main() {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
 	gS := gamestate.State{
 		Menu:        true,
 		Create:      false,
@@ -82,7 +76,6 @@ func main() {
 	gS.CreateState.Reset()
 
 	rl.SetConfigFlags(rl.FlagWindowResizable)
-	rl.SetConfigFlags(rl.FlagWindowUndecorated)
 	rl.InitWindow(screenWidth, screenHeight, "Test")
 	image := rl.LoadImage("internal/res/temp/BGMenu.jpg")
 
@@ -99,12 +92,6 @@ func main() {
 	debug := false
 
 	for !rl.WindowShouldClose() {
-
-		virtmouse := rl.GetMousePosition()
-
-		if rl.IsMouseButtonDown(rl.MouseLeftButton) {
-			rl.SetMousePosition(int(virtmouse.X), int(virtmouse.Y))
-		}
 
 		rl.BeginDrawing()
 
@@ -126,13 +113,6 @@ func main() {
 		} else if gS.Quit {
 			break
 		}
-		rw := rl.GetRenderWidth()
-		rh := rl.GetRenderHeight()
-		sw := rl.GetScreenWidth()
-		sh := rl.GetScreenHeight()
-
-		rl.DrawText(
-			fmt.Sprintf("Render: x%d / y%d Screen: x%d / y%d", rw, rh, sw, sh), 20, 20, 20, rl.Yellow)
 
 		if debug {
 			MouseView()
@@ -143,7 +123,6 @@ func main() {
 		if pressed := rl.IsKeyPressed(rl.KeyLeftControl); pressed {
 			debug = !debug
 		}
-
 		rl.EndDrawing()
 	}
 }
